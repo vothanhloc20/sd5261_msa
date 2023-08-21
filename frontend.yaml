@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: frontend
-          image: hnguyencanh/frontend:latest
+          image: locvothanhcontainerregistry.azurecr.io/acr-locvothanh-devops-frontend:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 3000
