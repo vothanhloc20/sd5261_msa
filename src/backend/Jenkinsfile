@@ -1,0 +1,39 @@
+pipeline {
+  agent any
+  stages {
+    stage('Build') {
+      steps {
+        dir('src/backend') {
+          sh "docker build -t backend:${BUILD_NUMBER} ."
+          sh 'docker tag backend:${BUILD_NUMBER} devmycontainerregistry.azurecr.io/backend:${BUILD_NUMBER}'
+        }
+      }
+    }
+    stage('Push') {
+      steps {
+        withCredentials([usernamePassword(credentialsId: 'docker', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
+          sh "docker login devmycontainerregistry.azurecr.io -u ${env.dockerUser} -p ${env.dockerPassword}"
+          sh 'docker push devmycontainerregistry.azurecr.io/backend:${BUILD_NUMBER}'
+        }
+      }
+    }
+    stage('Clean') {
+      steps {
+        sh 'docker image prune -a -f'
+      }
+    }
+    stage('Replace') {
+      steps {
+        sh "sed -i -e 's/registry/devmycontainerregistry.azurecr.io/' backend.yaml"
+        sh "sed -i -e 's/image-name/backend:${BUILD_NUMBER}/' backend.yaml"
+        sh "cat backend.yaml"
+      }
+    }
+    stage('Archive Artifacts') {
+      steps {
+        sh 'ls'
+        archiveArtifacts artifacts: 'backend.yaml', fingerprint: true
+      }
+    }
+  }
+}
