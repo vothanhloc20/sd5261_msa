@@ -12,7 +12,6 @@ pipeline {
     stage('Push') {
       steps {
         withCredentials([usernamePassword(credentialsId: 'docker', passwordVariable: 'dockerPassword', usernameVariable: 'dockerUser')]) {
-          sh "docker login devmycontainerregistry.azurecr.io -u ${env.dockerUser} -p ${env.dockerPassword}"
           sh 'docker push devmycontainerregistry.azurecr.io/backend:${BUILD_NUMBER}'
         }
       }
